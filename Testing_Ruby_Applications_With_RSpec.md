@@ -1,4 +1,4 @@
 
 Plural Sight Course: Testing Ruby Applications with RSpec
 
-[Getting Started](Getting_Started.md)
+ - [Getting Started](Getting_Started.md)
