@@ -146,3 +146,62 @@ You can also export it as a html:
 rspec --format html --color card.rb > result.html
 ```
 
+## Get Organized
+ - Spec files and Ruby files should be in separate folders.
+ 1. Move card.rb into a lib folder, and the spec code into a card_spec.rb file inside a spec folder.
+ 2. Remember to add 'require('card.rb') inside the spec code as it doesn't know where the card.rb file is
+     - require('card.rb') will work because rspec recognizes lib and spec folder.
+
+ 3. Now if you run 'rspec spec' in terminal one layer above spec folder, it will, by default, run all the spec files in it.
+
+### Adding Spec Helper
+In spec folder, add spec_helper.rb: 
+```
+ RSpec.configure do |config|
+  config.warnings = true
+end
+```
+
+This contains **global** configurations for our spec (will be explained more later).
+
+To use this, we have to add '--require ./spec/spec_helper.rb' in our cli.
+```
+rspec --require ./spec/spec_helper.rb spec
+```
+
+### Flags
+It is annoying to have to add "--format doc --color --require ./spec/spec_helper.rb spec" every single time.
+
+To solve this, we use flags.
+
+1. create a file called ".rspec" with content (one option per line) in parent folder of spec folder:
+```
+--color
+--require ./spec/spec_helper.rb
+--format doc
+```
+
+2. Now, we can run 'rspec spec' in without the option in cli.
+
+The files should be in the following tree format:
+```
+C:.
+│   .rspec
+│   Gemfile
+│   Gemfile.lock
+│
+├───lib
+│       card.rb
+│
+└───spec
+        card_spec.rb
+        spec_helper.rb
+```
+
+### Read command line configuration options from files
+You can do local, global and project scope for configuration options. To read more about it, go to https://relishapp.com/rspec/rspec-core/v/3-7/docs/configuration/read-command-line-configuration-options-from-files
+
+Local > project > global
+
+
+## Compact Specifications
