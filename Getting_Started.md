@@ -11,6 +11,21 @@
 | rspec-expectations  | Express desired outcomes  |
 | rspec-mocks         | Test doubles              |
 
+### Rspec Motivation
+ - Automatically verfiy correctness
+ - Document desired behaviour
+
+### Work Flow
+
+1. Write Code
+2. Test Code (Happy case)
+3. Test Code (Purposely test Fail case by providing wrong input)
+4. Test Code (Purposely test Fail case by breaking your code)
+
+### Why do we write Unit Testing at all?
+- CONFIDENCE
+- Spec should not be a complete testing of every single thing.
+- Test for confidence, not proof.
 
 ## Install & Setup
 
@@ -42,6 +57,14 @@ bundle exec rspec -v
 
 ## Your First Spec
 
+
+### RSpec Methods
+| Method      | Meaning                       |
+| ----------- | ----------------------------- |
+| it          | Specify a property. "Example" |
+| describe    | Group examples/properties     |
+
+### Testing your Ruby Code
 Create a folder, 'lightning-poker'
 ```
 mkdir lightning-poker
@@ -109,16 +132,6 @@ RSpec.describe 'a playing card' do
 end
 ```
 
-### Rspec Motivation
- - Automatically verfiy correctness
- - Document desired behaviour
-
-### RSpec Methods
-| Method      | Meaning                       |
-| ----------- | ----------------------------- |
-| it          | Specify a property. "Example" |
-| describe    | Group examples/properties     |
-
 ### Execute RSpec
 ```
 rspec card.rb
@@ -133,14 +146,3 @@ You can also export it as a html:
 rspec --format html --color card.rb > result.html
 ```
 
-## Work Flow
-
-1. Write Code
-2. Test Code (Happy case)
-3. Test Code (Purposely test Fail case by providing wrong input)
-4. Test Code (Purposely test Fail case by breaking your code)
-
-## Why do we write Unit Testing at all?
-- CONFIDENCE
-- Spec should not be a complete testing of every single thing.
-- Test for confidence, not proof.
