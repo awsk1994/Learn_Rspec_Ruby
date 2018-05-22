@@ -255,7 +255,7 @@ end
 Now consider the below code:
 
 ```
-  *it 'has a suit' do*
+  it 'has a suit' do
     raise unless card(suit: :spades).suit == :spades
   end
   
