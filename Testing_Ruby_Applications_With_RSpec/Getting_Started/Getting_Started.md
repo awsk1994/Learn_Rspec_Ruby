@@ -208,9 +208,11 @@ Local > project > global
 
 ### Concept Summary
 1. Reduce Dependency
+
 Card.new(suit: :spades, rank: 4) --> card(rank: 4)
 
 2. Spec Behaviour, not implementation:
+
 Testing with Set.
 
 ### 1. Spec should only change when behaviour does & Helper methods to bypass private 'new' methods.
@@ -253,7 +255,7 @@ end
 Now consider the below code:
 
 ```
-  it 'has a suit' do
+  *it 'has a suit' do*
     raise unless card(suit: :spades).suit == :spades
   end
   
