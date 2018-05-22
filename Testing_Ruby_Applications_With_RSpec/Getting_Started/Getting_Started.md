@@ -204,4 +204,240 @@ You can do local, global and project scope for configuration options. To read mo
 Local > project > global
 
 
-## Compact Specifications
+## Writing Compact Specifications
+
+### Concept Summary
+1. Reduce Dependency
+Card.new(suit: :spades, rank: 4) --> card(rank: 4)
+
+2. Spec Behaviour, not implementation:
+Testing with Set.
+
+### 1. Spec should only change when behaviour does & Helper methods to bypass private 'new' methods.
+
+Example:
+
+```
+it 'has a suit' do
+  raise unless Card.new(suit: :spades, rank: 4).suit == :spades
+end
+
+it 'has a rank' do
+  raise unless Card.new(suit: :spades, rank: 4) == 4
+end
+```
+Above is bad, because the spec says 'has a suit', but we are testing more than just the suit of the card.
+We will also change the structure incase the 'new' method of class is private (in which we normally wouldn't be able to call it from outside.)
+
+Example of refactor:
+```
+def Card(params = {})
+  defaults = {
+    suit: :hearts,
+    rank: 7
+  }
+
+  Card.new(**defaults.merge(params)).values_at(:suit, :rank)    # will be described later on.
+end
+
+it 'has a suit' do
+  raise unless card(suit: :spades).suit == :spades
+end
+
+it 'has a rank' do
+  raise unless card(rank: 4). rank == 4
+end
+```
+
+### 2. Group tests with 'describe' and 'context'
+Now consider the below code:
+
+```
+  it 'has a suit' do
+    raise unless card(suit: :spades).suit == :spades
+  end
+  
+  it 'has a rank' do
+    raise unless card(rank: 4).rank == 4
+  end
+
+  it `is equal to self` do 
+    subject = card(suit: :spades, rank: 4)
+    other = card(suit: :spades, rank: 4)
+    raise unless subject == other
+  end
+
+  it `is not equal to a card of a different suit` do 
+    subject = card(suit: :spades, rank: 4)
+    other   = card(suit: :hearts, rank: 4)
+    raise unless subject != other
+  end
+  
+  it `is not equal to a card of a different rank` do 
+    subject = card(suit: :spades, rank: 4)
+    other   = card(suit: :spades, rank: 5)
+    raise unless subject != other
+  end
+
+  it 'is hash equal to itself' do 
+    subject = card(suit: :spades, rank: 4)
+    other   = card(suit: :spades, rank: 4)
+    raise unless Set.new([subject, other]).size == 1
+  end
+
+  it 'is not hash equal to a card of differing suit' do 
+    subject = card(suit: :spades, rank: 4)
+    other   = card(suit: :hearts, rank: 4)
+    raise unless Set.new([subject, other]).size == 2
+  end
+
+  it 'is not hash equal to a card of differing rank' do 
+    subject = card(suit: :spades, rank: 4)
+    other   = card(suit: :spades, rank: 5)
+    raise unless Set.new([subject, other]).size == 2
+  end
+```
+
+To summarize it for the first example:
+```
+  it `is equal to self` do ...
+
+  it `is not equal to a card of a different suit` do ...
+  
+  it `is not equal to a card of a different rank` do ...
+
+  it 'is hash equal to itself' do ...
+
+  it 'is not hash equal to a card of differing suit' do ...
+
+  it 'is not hash equal to a card of differing rank' do ...
+```
+
+The code above is bad because it is not grouped. Below, is an improvement version:
+
+```
+  context 'equality' do
+    describe 'comparing to self' do
+      it `is equal to self` do ...
+      it 'is hash equal to itself' do ...
+    end
+
+    describe 'comparing to a card of different rank' do
+      it `is not equal` do ...
+      it 'is not hash equal' do ...
+    end
+
+    describe 'comparing to a card of different suit' do
+      it `is not equal to a card of a different suit` do ...
+      it 'is not hash equal to a card of differing suit' do ...
+    end
+  end
+```
+
+We can improve it even more by using, "context", which is just  another alias for describe.
+Additionally, subject and other are being defined repeatedly. We can create a definition for it so reduce the # of repetitions.
+
+```
+ context 'equality' do
+    def subject
+      @subject ||= card(suit: :spades, rank: 4)
+    end
+
+    describe 'comparing to self' do
+      def other 
+        @other ||= card(suit: :spades, rank: 4)
+      end
+
+      it `is equal to self` do ...
+      it 'is hash equal to itself' do ...
+    end
+
+    describe 'comparing to a card of different rank' do
+      def other 
+        @other ||= card(suit: :hearts, rank: 4)
+      end
+      it `is not equal` do ...
+      it 'is not hash equal' do ...
+    end
+
+    describe 'comparing to a card of different suit' do
+      def other 
+        @other ||= card(suit: :hearts, rank: 5)
+      end
+      it `is not equal` do ...
+      it 'is not hash equal' do ...
+    end
+  end
+```
+### 3. Shared Examples
+
+Now, we also notice that 'comparing to a card of different suit' and '...different rank' has very methods in their 'is not equal' and 'is not hash equal'.
+Here, we can use "shared examples" (https://relishapp.com/rspec/rspec-core/docs/example-groups/shared-examples)
+
+```
+  context 'equality' do
+    def subject
+      @subject ||= card(suit: :spades, rank: 4)
+    end
+
+    describe 'comparing against self' do
+      def other
+        @other ||= card(suit: :spades, rank: 4)
+      end
+
+      it `is equal to self` do 
+        raise unless subject == other
+      end
+
+      it 'is hash equal' do 
+        raise unless Set.new([subject, other]).size == 1
+      end
+    end
+
+    shared_examples_for 'an unequal card' do
+     it `is not equal` do 
+        raise unless subject != other
+      end
+
+      it 'is not hash equal' do 
+        raise unless Set.new([subject, other]).size == 2
+      end
+    end
+
+    describe 'comparing to a card of different suit' do
+      def other
+        @other ||= card(suit: :hearts, rank: 4)
+      end
+
+      it_behaves_like 'an unequal card'
+    end
+
+    describe 'comparing to a card of different rank' do
+      def other
+        @other ||= card(suit: :spades, rank: 5)
+      end
+      
+      it_behaves_like 'an unequal card'
+    end
+  end
+```
+
+### 4. Using let or subject to simplify def
+
+A final improvement is to change:
+```
+def other
+  @other ||= card(suit: :spades, rank: 5)
+end
+```
+
+For every def other, we can change it to:
+```
+let(:other) { card(suit: :spades, rank: 4) }
+```
+
+Another shortcut (since it's so common) is to change 'let' into:
+subject == let(:subject)
+```
+subject{ card(suit: :spades, rank: 4) }
+```

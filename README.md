@@ -4,3 +4,4 @@ Learning Module for Rspec
  - [Tutorial: Testing Ruby Applications with RSpec](Testing_Ruby_Applications_With_RSpec/Testing_Ruby_Applications_With_RSpec.md)
 
  - [Notes on Ruby Variables](Notes_on_Ruby_Variables.md)
+ - [Easy Mistakes] (Easy_Mistakes.md)
