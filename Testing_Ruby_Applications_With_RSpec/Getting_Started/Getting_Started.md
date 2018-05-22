@@ -374,7 +374,17 @@ Additionally, subject and other are being defined repeatedly. We can create a de
 ### 3. Shared Examples
 
 Now, we also notice that 'comparing to a card of different suit' and '...different rank' has very methods in their 'is not equal' and 'is not hash equal'.
-Here, we can use "shared examples" (https://relishapp.com/rspec/rspec-core/docs/example-groups/shared-examples)
+Here, we can use "shared examples" (https://relishapp.com/rspec/rspec-core/docs/example-groups/shared-examples):
+
+```
+  shared_examples_for 'an unequal card' do
+    ...
+  end
+
+  it_behaves_like 'an unequal card'
+```
+
+Example of the whole code with shared_examples is:
 
 ```
   context 'equality' do
