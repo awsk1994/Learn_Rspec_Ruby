@@ -55,6 +55,12 @@ Make sure rspec in bundle is correct.
 bundle exec rspec -v
 ```
 
+Or, run:
+```
+bundle gem myproject
+cd myproject
+```
+
 ## Your First Spec
 
 
@@ -453,3 +459,245 @@ subject == let(:subject)
 ```
 subject{ card(suit: :spades, rank: 4) }
 ```
+
+## Deep Dive
+
+Consider code
+
+```
+RSpec.describe 'an array' do
+    def build_array(*args)
+        [@args]
+    end
+    
+    puts self
+    puts self.class
+    puts 
+    
+    it 'has a length' do
+      puts self
+      puts self.class
+      puts self.object_id
+      puts 
+      raise unless build_array("a").length == 1
+    end
+    
+    it 'has a first element' do
+      puts self
+      puts self.class
+      puts self.object_id
+      puts 
+      raise unless build_array("a").length == 1
+    end
+end
+```
+This will output:
+
+```
+Finished in 0.025 seconds (files took 1.69 seconds to load)
+1 example, 0 failures
+
+C:\Users\Administrator\Desktop\rspec\Getting Started\DeepDive\deepDive\spec>rspec deepDive_spec.rb
+RSpec::ExampleGroups::AnArray
+Class
+
+#<RSpec::ExampleGroups::AnArray:0x28eaa59a>
+RSpec::ExampleGroups::AnArray
+2000
+
+.#<RSpec::ExampleGroups::AnArray:0x41fbdac4>
+RSpec::ExampleGroups::AnArray
+2002
+
+
+Finished in 0.087 seconds (files took 2.66 seconds to load)
+2 examples, 0 failures
+```
+
+Notice that the self in describe block is executing in context of a new class.
+Each it block executes in that instance of array. 
+Each it block is different from the other.
+
+### Keywords
+
+| Keyword             | Concept                   |
+| ------------------- | ------------------------- |
+| describe            | Example Group             |
+| it                  | Example                   |
+
+## Types of Tests
+
+### Unit Test
+Do our objects do the right thing, and are they covenient to work with?
+Test specific components.
+
+### Integration Test
+Testing Active Record, and Rails
+
+Does our code work against objects we can't change?
+
+### Acceptance Test
+Does the 'whole' system work?
+
+## Hooks
+
+### Before hooks
+Before hooks are run before every test before every group and sub-group
+
+Can also configure before hooks in your rspec configuration file (Rspec.configure)
+```
+require "rspec/expectations"
+
+RSpec.configure do |config|
+  config.before(:each) do
+    @before_each = "before each"
+  end
+  config.before(:all) do
+    @before_all = "before all"
+  end
+end
+
+describe "stuff in before blocks" do
+  describe "with :all" do
+    it "should be available in the example" do
+      @before_all.should == "before all"
+    end
+  end
+  describe "with :each" do
+    it "should be available in the example" do
+      @before_each.should == "before each"
+    end
+  end
+end
+```
+
+### Meta Data
+
+Sometimes we might want to run the before hook in most cases, but not all. In that case, we can use a metadata. It's almost like passing a boolean in the 'describe' and that will control if the before hook executes or not.
+
+### Hook Scopes
+
+You can control if you want the before hook to apply to once per example, example group or spec run.
+
+
+| Keyword   | Old Keyword      | Scope                              |
+| --------- | ---------------- | ---------------------------------- |
+| example   | each             | Once per example (it)              |
+| context   | all              | Once per example group (describe)  |
+| suite     | suite            | Once per spec run                  |
+
+```
+Eg:
+before(:all) do
+...
+end
+```
+
+From https://relishapp.com/rspec/rspec-core/v/2-2/docs/hooks/before-and-after-hooks#define-before(:each)-block
+
+```
+require "rspec/expectations"
+
+class Thing
+  def widgets
+    @widgets ||= []
+  end
+end
+
+describe Thing do
+  before(:each) do
+    @thing = Thing.new
+  end
+
+  describe "initialized in before(:each)" do
+    it "has 0 widgets" do
+      @thing.should have(0).widgets
+    end
+
+    it "can get accept new widgets" do
+      @thing.widgets << Object.new
+    end
+
+    it "does not share state across examples" do
+      @thing.should have(0).widgets
+    end
+  end
+end
+```
+
+```
+require "rspec/expectations"
+
+class Thing
+  def widgets
+    @widgets ||= []
+  end
+end
+
+describe Thing do
+  before(:all) do
+    @thing = Thing.new
+  end
+
+  describe "initialized in before(:all)" do
+    it "has 0 widgets" do
+      @thing.should have(0).widgets
+    end
+
+    it "can get accept new widgets" do
+      @thing.widgets << Object.new
+    end
+
+    it "shares state across examples" do
+      @thing.should have(1).widgets
+    end
+  end
+end
+```
+
+```
+describe "an error in before(:all)" do
+  before(:all) do
+    raise "oops"
+  end
+
+  it "fails this example" do
+  end
+
+  it "fails this example, too" do
+  end
+
+  after(:all) do
+    puts "after all ran"
+  end
+
+  describe "nested group" do
+    it "fails this third example" do
+    end
+
+    it "fails this fourth example" do
+    end
+
+    describe "yet another level deep" do
+      it "fails this last example" do
+      end
+    end
+  end
+end
+```
+### Types of Hook
+https://relishapp.com/rspec/rspec-core/v/2-0/docs/hooks
+
+### Why not Hooks?
+
+In short, easy to lose track of it. Reason is:
+
+ - Not localized to the spec
+ - Can't look at the test and know exactly what is running.
+ - Recommend not put in config as it is in another file - more complexity.
+ 
+ Always ask: is there a more local way to do this?
+
+## Recap
+
+Behavior not Implementation
