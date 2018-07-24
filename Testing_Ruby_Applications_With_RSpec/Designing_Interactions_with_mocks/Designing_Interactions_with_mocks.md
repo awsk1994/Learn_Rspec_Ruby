@@ -1,8 +1,9 @@
-#Designing Interactions with Mocks
+# Designing Interactions with Mocks
+
 LINK: https://github.com/rspec/rspec-mocks
 
 
-##Designing with Mocks
+## Designing with Mocks
 
 Firstly, we want to intercept any external dependencies, such as puts and print calls.
 
