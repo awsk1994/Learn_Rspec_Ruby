@@ -49,3 +49,78 @@ allow(HighCard:CLI).to receive(:puts)
 expect(HighCard::CLI).to receive(:puts).with("You won!")
 ```
 
+## Test Doubles
+Both mock and stub are aliases of the more generic double.
+
+Test Doubles is a generic term for any object that stands in for a real object during a test ("stunt double").
+
+Doubles are "strict" by default - meaning that any message you have not allowed or expected will trigger an error. 
+
+Link: https://relishapp.com/rspec/rspec-mocks/v/3-8/docs/basics
+
+For example:
+```
+RSpec.describe "A test double" do
+  it "raises errors when messages not allowed or expected are received" do
+    dbl = double("Some Collaborator")
+    dbl.foo
+  end
+end
+```
+
+will give
+
+```
+#<Double "Some Collaborator"> received unexpected message :foo with (no args)
+```
+
+### Allow messages
+```
+RSpec.describe "allow" do
+  it "returns nil from allowed messages" do
+    dbl = double("Some Collaborator")
+    allow(dbl).to receive(:foo)
+    expect(dbl.foo).to be_nil
+  end
+end
+```
+
+### Expecting messages
+```
+RSpec.describe "An unfulfilled positive message expectation" do
+  it "triggers a failure" do
+    dbl = double("Some Collaborator")
+    expect(dbl).to receive(:foo)
+  end
+end
+```
+
+## Listening to your mocks.
+
+You can use argument matchers to specify a type or a specific argument that you expect, and then control the returning method. 
+
+## Null Objects
+
+If you just do:
+
+```
+instance_double("some_class")
+```
+
+You will need to add allows to make the methods work (eg. even your puts method)
+
+But if you do:
+```
+instance_double("some_class").as_null_object
+```
+You don't need to add all the 'allows' that you would've.
+
+
+
+
+
+
+
+
+
+
